@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block content %}
+{% include 'navbar.html' with context %}
+
+    <div class="container mt-5">
+         <h1 class="display-1">Hello <span class="text-muted">@{{ user.username }}</span></h1>
+    </div>
+
+    <!-- form to change password and username -->
+
+    <div class="container mt-5">
+        <form action="" method="post" class="form">
+            <div class="form-group">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text"
+                name="username"
+                id="username"
+                value="{{user.username}}"
+                class="form-control w-50"
+                required>
+            </div>
+            <div class="form-group">
+                <label for="cpassword" class="form-label">Current Password</label>
+                <input type="password" name="cpassword" id="cpassword" class="form-control w-50" required>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">New Password:</label>
+                <input type="password" name="password" id="password" class="form-control w-50" required>
+            </div>
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" name="name" id="name" value="{{user.name}}" class="form-control w-50">
+            </div>
+            <div class="buttons d-flex justify-content-center align-items-center">
+                <div class="form-group m-3">
+                    <input type="submit" value="Update" class="btn btn-primary">
+                </div>
+                <a href="{{url_for('logout')}}" class="btn btn-success login-btn">Logout</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
