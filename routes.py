@@ -17,11 +17,29 @@ def auth_required(func):
             return redirect(url_for('login'))
     return inner
 
+
+def admin_required(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to continue')
+            return redirect(url_for('login'))
+        user = User.query.get(session['user_id'])
+        if not user.is_admin:
+            flash("You are not authorized to access this page")
+            return redirect(url_for('index'))
+        return func(*args, **kwargs)
+    return inner
+
 #-------------------
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
+@auth_required
 def index():
+    user = User.query.get(session['user_id'])
+    if user.is_admin:
+        return redirect(url_for('admin'))
     return render_template('index.html')
 
 
@@ -141,3 +159,71 @@ def logout():
     flash('Logged out successfully')
     return redirect(url_for('login'))
 
+
+#--------------Admin pages-----------------
+@app.route('/admin')
+@admin_required
+def admin():
+    subjects = Subject.query.all()
+    return render_template('admin.html', subjects=subjects)
+
+@app.route('/subject/add')
+@admin_required
+def add_subject():
+    return render_template('subject/add.html')
+
+@app.route('/subject/add', methods=['POST'])
+@admin_required
+def add_subject_post():
+    sub_name = request.form.get('sub_name')
+    sub_desc = request.form.get('sub_desc')
+
+    if not sub_name:
+        flash("Please enter subject name")
+        return redirect(url_for('add_subject_post'))
+
+    subject = Subject(name=sub_name, desc=sub_desc)
+    db.session.add(subject)
+    db.session.commit()
+
+    flash("Subject added successfully")
+    return redirect(url_for('admin'))
+
+@app.route('/subject/<int:id>')
+@admin_required
+def show_subject(id):
+    return "subject info here"
+
+@app.route('/subject/<int:id>/edit')
+@admin_required
+def edit_subject(id):
+    subject = Subject.query.get(id)
+    if not subject:
+        flash("Subject does not exist")
+        return redirect(url_for('admin'))
+    return render_template('subject/edit.html', subject=subject)
+
+
+@app.route('/subject/<int:id>/edit', methods=['POST'])
+@admin_required
+def edit_subject_post(id):
+    subject = Subject.query.get(id)
+    if not subject:
+        flash("Subject does not exist")
+        return redirect(url_for('admin'))
+
+    sub_name = request.form.get('sub_name')
+    sub_desc = request.form.get('sub_desc')
+    if not sub_name:
+        flash("Please fill out subject name")
+        return redirect(url_for('edit_subject'))
+    subject.name = sub_name
+    subject.desc = sub_desc
+    db.session.commit()
+    flash("Subject updated successfully")
+    return render_template('subject/edit.html', subject=subject)
+
+@app.route('/subject/<int:id>/delete')
+@admin_required
+def delete_subject(id):
+    return "delete subject"
