@@ -192,7 +192,11 @@ def add_subject_post():
 @app.route('/subject/<int:id>')
 @admin_required
 def show_subject(id):
-    return "subject info here"
+    subject = Subject.query.get(id)
+    if not subject:
+        flash("Subject does not exist")
+        return redirect(url_for('admin'))
+    return render_template('subject/show.html', subject=subject)
 
 @app.route('/subject/<int:id>/edit')
 @admin_required
@@ -221,9 +225,51 @@ def edit_subject_post(id):
     subject.desc = sub_desc
     db.session.commit()
     flash("Subject updated successfully")
-    return render_template('subject/edit.html', subject=subject)
+    return redirect(url_for('admin'))
 
 @app.route('/subject/<int:id>/delete')
 @admin_required
 def delete_subject(id):
-    return "delete subject"
+    subject = Subject.query.get(id)
+    if not subject:
+        flash("Category does not exist!")
+        return redirect(url_for('admin'))
+    return render_template('subject/delete.html', subject=subject)
+
+
+@app.route('/subject/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_subject_post(id):
+    subject = Subject.query.get(id)
+    if not subject:
+        flash("Category does not exist!")
+        return redirect(url_for('admin'))
+    db.session.delete(subject)
+    db.session.commit()
+
+    flash("Subject deleted successfully")
+    return redirect(url_for('admin'))
+
+#------------------CHAPTERS--------------------
+@app.route('/chapter/add')
+@admin_required
+def add_chapter():
+    return render_template('chapter/add.html')
+
+@app.route('/chapter/add', methods=['POST'])
+@admin_required
+def add_chapter_post():
+    chap_name = request.form.get('chap_name')
+    chap_desc = request.form.get('chap_desc')
+
+    if not chap_name:
+        flash("Please enter chapter name")
+        return redirect(url_for('add_chapter_post'))
+
+    chapter = Chapter(name=chap_name, desc=chap_desc)
+    sub_id = chapter.sub_id
+    db.session.add(chapter)
+    db.session.commit()
+
+    flash("Chapter added successfully")
+    return redirect(url_for('show_subject/sub_id'))
