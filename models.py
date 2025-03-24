@@ -5,8 +5,6 @@ from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-#db = SQLAlchemy(app)
-
 def get_ist_time():
     IST = timezone(timedelta(hours=5, minutes=30))
     return datetime.now(IST)

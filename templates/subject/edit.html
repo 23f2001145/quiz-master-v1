@@ -21,7 +21,7 @@
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="login-box">
             <h2 class="text-center">Edit subject</h2>
-            <form action="" method="POST">
+            <form action="{{ url_for('edit_subject_post', id=subject.id) }}" method="POST">
                 <div class="mb-3">
                     <label class="form-label">Subject Name</label>
                     <input type="text" class="form-control" name="sub_name" value="{{subject.name}}">

@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}Add Chapter{% endblock %}
+{% block title %}Add Chapters{% endblock %}
 
 {% block styles %}
 
@@ -20,21 +20,21 @@
 
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="login-box">
-            <h2 class="text-center">Add chapter</h2>
-            <form action="{{ url_for('add_chapter_post', subject_id = subject.id)}}" method="POST">
+            <h2 class="text-center">Edit chapter</h2>
+            <form action="{{ url_for('edit_chapter_post', chapter_id=chapter.id) }}" method="POST">
                 <div class="mb-3">
                     <label class="form-label">Chapter Name</label>
-                    <input type="text" class="form-control" name="chap_name" placeholder="Enter chapter name">
+                    <input type="text" class="form-control" name="chap_name" value="{{chapter.name}}">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Chapter Description</label>
-                    <input type="text" class="form-control" name="chap_desc" placeholder="Enter chapter description">
+                    <input type="text" class="form-control" name="chap_desc" value="{{chapter.desc}}">
                 </div>
                 <div class="mb-3">
-                    <label for="subject_id" class="form-label">Category:</label>
+                    <label for="subject_id" class="form-label">Subject:</label>
                     <select name="subject_id" id="subject_id" class="form-control" required>
                         {% for sub in subjects %}
-                        {% if sub.id == subject.id %}
+                        {% if sub.id == chapter.sub_id %}
                             <option selected value="{{sub.id}}">{{sub.name}}</option>
                         {% else %}
                             <option value="{{sub.id}}">{{sub.name}}</option>
@@ -42,7 +42,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-success w-100 login-btn">Create chapter</button>
+                <button type="submit" class="btn btn-success w-100 login-btn">Update chapter</button>
             </form>
         </div>
     </div>

@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}{{subject.name}}{% endblock %}
+{% block title %}{{chapter.name}}{% endblock %}
 
 {% block styles %}
 <!-- Bootstrap CSS -->
@@ -27,7 +27,7 @@
 
 {% block content %}
 
-    <h3 class="display-1 text-center">{{subject.name}}</h3>
+    <h3 class="display-1 text-center">{{chapter.name}}</h3>
 <!--    <h2 class="display-4 heading">Subjects</h2>-->
     <br>
 
@@ -35,18 +35,18 @@
         <table class="table text-center">
             <thead>
                 <tr>
-                    <th>Chapter ID</th>
-                    <th>Chapter Name</th>
-                    <th>No. of Quizzes</th>
+                    <th>Quiz ID</th>
+                    <th>Quiz Name</th>
+                    <th>No. of Questions</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for chapter in subject.chapters %}
+                {% for quiz in chapter.quizzes %}
                 <tr>
-                    <td>{{chapter.id}}</td>
-                    <td>{{chapter.name}}</td>
-                    <td>{{chapter.quizzes|length}}</td>
+                    <td>{{quiz.id}}</td>
+                    <td>{{quiz.name}}</td>
+                    <td>{{quiz.questions|length}}</td>
                     <td>
                         <a href="{{url_for('show_chapter', chapter_id=chapter.id)}}" class="btn btn-primary">
                             <i class="fas fa-search    "></i>
@@ -69,8 +69,8 @@
     </div>
 
     <div class="d-flex justify-content-center">
-        <a href="{{url_for('add_chapter', subject_id=subject.id)}}" class="btn btn-success login-btn">
-            <i class="fa-solid fa-plus"></i> Add Chapter
+        <a href="{{url_for('add_quiz', chapter_id=chapter.id)}}" class="btn btn-success login-btn">
+            <i class="fa-solid fa-plus"></i> Add Quiz
         </a>
     </div>
 
