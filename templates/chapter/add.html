@@ -24,24 +24,26 @@
             <form action="{{ url_for('add_chapter_post', subject_id = subject.id)}}" method="POST">
                 <div class="mb-3">
                     <label class="form-label">Chapter Name</label>
-                    <input type="text" class="form-control" name="chap_name" placeholder="Enter chapter name">
+                    <input type="text" class="form-control" name="chap_name" placeholder="Enter chapter name" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Chapter Description</label>
                     <input type="text" class="form-control" name="chap_desc" placeholder="Enter chapter description">
                 </div>
                 <div class="mb-3">
-                    <label for="subject_id" class="form-label">Category:</label>
-                    <select name="subject_id" id="subject_id" class="form-control" required>
-                        {% for sub in subjects %}
-                        {% if sub.id == subject.id %}
-                            <option selected value="{{sub.id}}">{{sub.name}}</option>
-                        {% else %}
-                            <option value="{{sub.id}}">{{sub.name}}</option>
-                        {% endif %}
-                        {% endfor %}
-                    </select>
+                    <label class="form-label">Subject</label><br>
+<!--                    <select name="subject_id" id="subject_id" class="form-control" required>-->
+<!--                        {% for sub in subjects %}-->
+<!--                        {% if sub.id == subject.id %}-->
+<!--                            <option selected value="{{sub.id}}">{{sub.name}}</option>-->
+<!--                        {% else %}-->
+<!--                            <option value="{{sub.id}}">{{sub.name}}</option>-->
+<!--                        {% endif %}-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+                    <input type="text" class="form-control" value="{{ subject.name }}" readonly>
                 </div>
+                <input type="hidden" name="subject_id" value="{{ subject.id }}">
                 <button type="submit" class="btn btn-success w-100 login-btn">Create chapter</button>
             </form>
         </div>

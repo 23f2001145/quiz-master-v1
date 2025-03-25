@@ -37,7 +37,7 @@ class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
     chap_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
-    duration = db.Column(db.Time, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
     pub_date = db.Column(db.Date, nullable=False)
     questions = db.relationship('Question', backref='quiz')#Quiz.questions
     scores = db.relationship('Scores', backref='quiz')#Quiz.scores

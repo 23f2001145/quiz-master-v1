@@ -1,0 +1,72 @@
+{% extends 'layout.html' %}
+
+{% block title %}Add Question{% endblock %}
+
+{% block styles %}
+
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+
+
+{% endblock %}
+
+{% block content %}
+
+
+
+
+
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="login-box">
+            <h2 class="text-center">Add question</h2>
+            <form action="{{ url_for('add_question_post', quiz_id = quiz.id)}}" method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Question Name</label>
+                    <input type="text" class="form-control" name="que_name" placeholder="Enter question name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Question Statement</label>
+                    <input type="text" class="form-control" name="que" placeholder="Enter question">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Option 1</label>
+                    <input type="text" class="form-control" name="op1" placeholder="Enter Option 1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Option 2</label>
+                    <input type="text" class="form-control" name="op2" placeholder="Enter Option 2">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Option 3</label>
+                    <input type="text" class="form-control" name="op3" placeholder="Enter Option 3">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Option 4</label>
+                    <input type="text" class="form-control" name="op4" placeholder="Enter Option 4">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Answer</label>
+                    <input type="text" class="form-control" name="ans" placeholder="Enter answer (Option no.)">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Quiz</label>
+<!--                    <select name="quiz_id" id="quiz_id" class="form-control" required>-->
+<!--                        {% for quiz in quizzes %}-->
+<!--                        {% if quiz.id == quiz.id %}-->
+<!--                            <option selected value="{{quiz.id}}">{{quiz.name}}</option>-->
+<!--                        {% else %}-->
+<!--                            <option value="{{quiz.id}}">{{quiz.name}}</option>-->
+<!--                        {% endif %}-->
+<!--                        {% endfor %}-->
+<!--                    </select>-->
+                    <input type="text" class="form-control" value="{{ quiz.name }}" readonly>
+                </div>
+                <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                <button type="submit" class="btn btn-success w-100 login-btn">Create question</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
