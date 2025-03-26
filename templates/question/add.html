@@ -18,37 +18,37 @@
 
 
 
-    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="container d-flex justify-content-center align-items-center min-vh-100" style="margin-top: 100px;">
         <div class="login-box">
             <h2 class="text-center">Add question</h2>
             <form action="{{ url_for('add_question_post', quiz_id = quiz.id)}}" method="POST">
                 <div class="mb-3">
                     <label class="form-label">Question Name</label>
-                    <input type="text" class="form-control" name="que_name" placeholder="Enter question name">
+                    <input type="text" class="form-control" name="que_name" placeholder="Enter question name" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Question Statement</label>
-                    <input type="text" class="form-control" name="que" placeholder="Enter question">
+                    <input type="text" class="form-control" name="que" placeholder="Enter question" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Option 1</label>
-                    <input type="text" class="form-control" name="op1" placeholder="Enter Option 1">
+                    <input type="text" class="form-control" name="op1" placeholder="Enter Option 1" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Option 2</label>
-                    <input type="text" class="form-control" name="op2" placeholder="Enter Option 2">
+                    <input type="text" class="form-control" name="op2" placeholder="Enter Option 2" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Option 3</label>
-                    <input type="text" class="form-control" name="op3" placeholder="Enter Option 3">
+                    <input type="text" class="form-control" name="op3" placeholder="Enter Option 3" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Option 4</label>
-                    <input type="text" class="form-control" name="op4" placeholder="Enter Option 4">
+                    <input type="text" class="form-control" name="op4" placeholder="Enter Option 4" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Answer</label>
-                    <input type="text" class="form-control" name="ans" placeholder="Enter answer (Option no.)">
+                    <input type="text" class="form-control" name="ans" placeholder="Enter answer (Option no.)" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Quiz</label>

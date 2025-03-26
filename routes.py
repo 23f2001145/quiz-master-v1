@@ -532,38 +532,91 @@ def add_question_post(quiz_id):
 
     return redirect(url_for('show_quiz', quiz_id=quiz_id))
 
-#-------------- EDIT QUIZ--------------------#
+#-------------- EDIT QUESTION--------------------#
 
 @app.route('/question/<int:question_id>/edit')
 @admin_required
-def edit_question(quiz_id):
-    return "Edit question"
+def edit_question(question_id):
+    question = Question.query.get(question_id)
+    quizzes = Quiz.query.all()
+    if not question:
+        flash("Question does not exist")
+        return redirect(url_for('admin'))
+    return render_template('question/edit.html', quizzes=quizzes, question=question)
 
 
 @app.route('/question/<int:question_id>/edit', methods=['POST'])
 @admin_required
-def edit_question_post(quiz_id):
-    return "Edit question"
+def edit_question_post(question_id):
+    question = Question.query.get(question_id)
+    quizzes = Quiz.query.all()
+    if not question:
+        flash("Question does not exist")
+        return redirect(url_for('admin'))
+
+    que_name = request.form.get('que_name') or question.name
+    que = request.form.get('que') or question.q_statement
+    op1 = request.form.get('op1') or question.opt1
+    op2 = request.form.get('op2') or question.opt2
+    op3 = request.form.get('op3') or question.opt3
+    op4 = request.form.get('op4') or question.opt4
+    ans = request.form.get('ans') or question.ans
+    que_quiz = request.form.get('quiz_id') or question.quiz_id
+
+    if not que_name:
+        flash("Please enter question name")
+        return redirect(url_for('add_question', quiz_id=question.quiz_id))
+
+    question.name = que_name
+    question.q_statement = que
+    question.quiz_id = que_quiz
+    question.opt1 = op1
+    question.opt2 = op2
+    question.opt3 = op3
+    question.opt4 = op4
+    question.ans = ans
+
+    db.session.commit()
+    flash("Question updated successfully")
+    return redirect(url_for('show_quiz', quiz_id=question.quiz_id))
 
 
-#--------------DELETE QUIZ--------------#
+#--------------DELETE QUESTION--------------#
 
 
 @app.route('/question/<int:question_id>/delete')
 @admin_required
 def delete_question(question_id):
-    return "delete question"
+    question = Question.query.get(question_id)
+    if not question:
+        flash("Question does not exist")
+        return redirect(url_for('admin'))
+    return render_template('question/delete.html', question=question)
 
 
 @app.route('/question/<int:question_id>/delete', methods=['POST'])
 @admin_required
 def delete_question_post(question_id):
-    return "delete question"
+    question = Question.query.get(question_id)
+    if not question:
+        flash("Question does not exist")
+        return redirect(url_for('admin'))
+    quiz_id = question.quiz_id
+    db.session.delete(question)
+    db.session.commit()
+
+    flash("Question deleted successfully")
+    return redirect(url_for('show_quiz', quiz_id=quiz_id))
 
 
-#--------------SHOW QUIZ--------------#
+#--------------SHOW QUESTION--------------#
 
 @app.route('/question/<int:question_id>')
 @admin_required
 def show_question(question_id):
-    return "see question"
+    question = Question.query.get(question_id)
+    quiz = Quiz.query.get(question.quiz_id)
+    if not question:
+        flash("Question does not exist!")
+        return redirect(url_for('admin'))
+    return render_template('question/show.html', question=question, quiz=quiz)
