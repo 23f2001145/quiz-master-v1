@@ -772,4 +772,9 @@ def search_quizzes():
     # Fetch filtered quizzes
     quizzes = query.all()
 
+    user = User.query.get(session.get('user_id'))
+
+    if user.is_admin:
+        return render_template('admin_quizzes.html', quizzes=quizzes)
+
     return render_template('quizzes.html', quizzes=quizzes)
