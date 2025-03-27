@@ -4,7 +4,11 @@ from app import app
 from models import db, User, Subject, Chapter, Quiz, Question, Scores
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from datetime import datetime, timezone, timedelta
 
+def get_ist_time():
+    IST = timezone(timedelta(hours=5, minutes=30))
+    return datetime.now(IST)
 
 #decorator for auth_required
 def auth_required(func):
@@ -31,24 +35,38 @@ def admin_required(func):
         return func(*args, **kwargs)
     return inner
 
-#-------------------
-
-
-@app.route('/')
-@auth_required
-def index():
-    user = User.query.get(session['user_id'])
-    if user.is_admin:
-        return redirect(url_for('admin'))
-    return render_template('index.html')
-
-
+#--------------------LOGIN--------------------#
 
 @app.route('/login', methods=['GET'])
 def login():
     return render_template('login.html')
 
+@app.route('/login', methods=['POST'])
+def login_post():
+    username = request.form.get('username')
+    password = request.form.get('password')
 
+
+    if not username or not password:
+        flash("Please fill out all fields")
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash('No such username found')
+        return redirect(url_for('login'))
+
+    if not check_password_hash(user.passhash,password):
+        flash("Incorrect Password")
+        return redirect(url_for('login'))
+
+    session['user_id'] = user.id
+    flash('Login Successful')
+    return redirect(url_for('index'))
+
+
+#-----------------REGISTER-------------------#
 
 @app.route('/register')
 def register():
@@ -83,32 +101,7 @@ def register_post():
     return redirect(url_for('login'))
 
 
-
-@app.route('/login', methods=['POST'])
-def login_post():
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-
-    if not username or not password:
-        flash("Please fill out all fields")
-        return redirect(url_for('login'))
-
-    user = User.query.filter_by(username=username).first()
-
-    if not user:
-        flash('No such username found')
-        return redirect(url_for('login'))
-
-    if not check_password_hash(user.passhash,password):
-        flash("Incorrect Password")
-        return redirect(url_for('login'))
-
-    session['user_id'] = user.id
-    flash('Login Successful')
-    return redirect(url_for('index'))
-
-
+#---------------PROFILE-------------------#
 
 @app.route('/profile')
 @auth_required
@@ -150,7 +143,25 @@ def profile_post():
     flash('Profile updated successfully')
     return redirect(url_for('profile'))
 
+#---------------SCORES-------------------#
 
+@app.route('/scores')
+@auth_required
+def scores():
+    current_user = User.query.get(session.get('user_id'))
+    if not current_user:
+        flash("User session expired. Please log in again.", "danger")
+        return redirect(url_for('login'))
+    if current_user.is_admin:
+        all_scores = Scores.query.all()
+        return render_template('admin_scores.html', scores=all_scores)
+    else:
+        user_scores = Scores.query.filter_by(user_id=current_user.id).all()
+        return render_template('user_scores.html', scores=user_scores)
+
+
+
+#---------------LOGOUT-------------------#
 
 @app.route('/logout')
 @auth_required
@@ -160,7 +171,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-#--------------Admin pages-----------------
+#--------------ADMIN PAGES-----------------#
 @app.route('/admin')
 @admin_required
 def admin():
@@ -620,3 +631,145 @@ def show_question(question_id):
         flash("Question does not exist!")
         return redirect(url_for('admin'))
     return render_template('question/show.html', question=question, quiz=quiz)
+
+
+#-----------------USER PAGES---------------#
+
+#-----------------INDEX---------------#
+
+
+@app.route('/')
+@auth_required
+def index():
+    user = User.query.get(session['user_id'])
+    if user.is_admin:
+        return redirect(url_for('admin'))
+    subjects = Subject.query.all()
+    return render_template('index.html', subjects=subjects)
+
+
+
+@app.route('/subject/<int:subject_id>/chapter/<int:chapter_id>')
+@auth_required
+def view_chapter(subject_id, chapter_id):
+    subject = Subject.query.get(subject_id)
+    chapter = Chapter.query.get(chapter_id)
+    quizzes = chapter.quizzes
+    return render_template('user_chapter.html', subject=subject, chapter=chapter, quizzes=quizzes)
+
+
+@app.route('/quiz/<int:quiz_id>/start')
+@auth_required
+def start_quiz(quiz_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("User session expired. Please log in again.", "danger")
+        return redirect(url_for('login'))
+
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    # Check if the user has already attempted the quiz
+    existing_attempt = Scores.query.filter_by(user_id=user_id, quiz_id=quiz_id).first()
+    if existing_attempt:
+        flash("You have already attempted this quiz.", "warning")
+        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+
+    # Store quiz start time in session
+    session[f'quiz_{quiz_id}_start_time'] = get_ist_time().isoformat()
+
+    return render_template('start_quiz.html', quiz=quiz, questions=quiz.questions)
+
+
+@app.route('/quiz/<int:quiz_id>/submit', methods=['POST'])
+@auth_required
+def submit_quiz(quiz_id):
+    current_user = User.query.get(session.get('user_id'))
+    if not current_user:
+        flash("User session expired. Please log in again.", "danger")
+        return redirect(url_for('login'))
+
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    # Ensure quiz start time exists
+    start_time_str = session.get(f'quiz_{quiz_id}_start_time')
+    if not start_time_str:
+        flash("Quiz has not been started.", "danger")
+        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+
+    start_time = datetime.fromisoformat(start_time_str)
+    elapsed_time = (get_ist_time() - start_time).total_seconds()
+
+    # Validate quiz duration
+    if elapsed_time > quiz.duration * 60:
+        flash("Time is up! Your submission was not accepted.", "danger")
+        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    if not questions:
+        flash("This quiz has no questions.", "warning")
+        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+
+    # Check if the user already submitted
+    existing_attempt = Scores.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
+    if existing_attempt:
+        flash("You have already submitted this quiz.", "warning")
+        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+
+    user_answers = {}
+    score = 0
+
+    for question in questions:
+        selected_option = request.form.get(f'question_{question.id}')
+        if selected_option:
+            user_answers[question.id] = int(selected_option)
+            if int(selected_option) == question.ans:
+                score += 1
+        else:
+            user_answers[question.id] = None
+
+    # Save the score
+    new_score = Scores(
+        user_id=current_user.id,
+        quiz_id=quiz_id,
+        total_score=score,
+        datetime=get_ist_time()
+    )
+    db.session.add(new_score)
+    db.session.commit()
+
+    return render_template(
+        'submit_quiz.html',
+        quiz=quiz,
+        score=score,
+        total_questions=len(questions),
+        questions=questions,
+        user_answers=user_answers
+    )
+
+
+@app.route('/quizzes', methods=['GET'])
+@auth_required
+def search_quizzes():
+    subject_name = request.args.get('subject_name', '').strip()
+    chapter_name = request.args.get('chapter_name', '').strip()
+    quiz_name = request.args.get('quiz_name', '').strip()
+
+    # Start with all quizzes
+    query = Quiz.query
+
+    # Filter by subject name if provided
+    if subject_name:
+        query = query.join(Chapter).join(Subject).filter(Subject.name.ilike(f"%{subject_name}%"))
+
+    # Filter by chapter name if provided
+    if chapter_name:
+        query = query.join(Chapter).filter(Chapter.name.ilike(f"%{chapter_name}%"))
+
+    # Filter by quiz name if provided
+    if quiz_name:
+        query = query.filter(Quiz.name.ilike(f"%{quiz_name}%"))
+
+    # Fetch filtered quizzes
+    quizzes = query.all()
+
+    return render_template('quizzes.html', quizzes=quizzes)

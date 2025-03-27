@@ -1,0 +1,82 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        background-color: #f4f6f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+        max-width: 1200px;
+        padding-top: 30px;
+    }
+    .chapter-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .chapter-header h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .quiz-section {
+        margin-bottom: 40px;
+    }
+    .quiz-card {
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: none;
+        margin-bottom: 20px;
+    }
+    .quiz-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .quiz-card .card-body {
+        text-align: center;
+    }
+    .quiz-card .btn-primary {
+        background-color: #3498db;
+        border-color: #3498db;
+        transition: all 0.3s ease;
+    }
+    .quiz-card .btn-primary:hover {
+        background-color: #2980b9;
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="chapter-header">
+            <h1>{{ chapter.name }}</h1>
+            <p class="text-muted">Quizzes for {{ subject.name }} - {{ chapter.name }}</p>
+        </div>
+
+        <div class="quiz-section">
+            <div class="row">
+                {% for quiz in quizzes %}
+                <div class="col-md-4">
+                    <div class="card quiz-card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">{{ quiz.name }}</h5>
+                            <p class="text-muted">Questions: {{ quiz.questions|length }}</p>
+                            <p class="text-muted">Duration: {{ quiz.duration}} minutes</p>
+                            <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start Quiz</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">No quizzes available for this chapter.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

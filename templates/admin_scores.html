@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="my-4 text-center">All Users' Scores</h2>
+    {% if scores %}
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>User</th>
+                    <th>Quiz</th>
+                    <th>Attempt Score</th>
+                    <th>Total Score</th>
+                    <th>Date Attempted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for score in scores %}
+                <tr>
+                    <td>{{ score.user.id }}</td>
+                    <td>{{ score.user.username }}</td>
+                    <td>{{ score.quiz.name }}</td>
+                    <td>{{ score.total_score }}</td>
+                    <td>{{ score.quiz.questions|length }}</td>
+                    <td>{{ score.datetime.strftime('%d-%m-%Y %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning text-center">No scores available.</div>
+    {% endif %}
+</div>
+{% endblock %}
