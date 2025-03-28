@@ -1,6 +1,6 @@
 from app import db
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, UTC
 from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -18,36 +18,36 @@ class User(db.Model):
     name = db.Column(db.String(32), nullable=False)
     dob = db.Column(db.Date, nullable=True)
     qualification = db.Column(db.String(32), nullable=True)
-    scores = db.relationship('Scores', backref='user')#User.scores
+    scores = db.relationship('Scores', backref='user', cascade='all, delete-orphan')#User.scores
 
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
     desc = db.Column(db.String(256), nullable=True)
-    chapters = db.relationship('Chapter', backref='subject')#Subject.chapters
+    chapters = db.relationship('Chapter', backref='subject', cascade='all, delete-orphan')#Subject.chapters
 
 class Chapter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
     desc = db.Column(db.String(256), nullable=True)
-    sub_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-    quizzes = db.relationship('Quiz', backref='chapter')#Chapter.quizzes
+    sub_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='CASCADE'), nullable=False)
+    quizzes = db.relationship('Quiz', backref='chapter', cascade='all, delete-orphan')#Chapter.quizzes
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
-    chap_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
+    chap_id = db.Column(db.Integer, db.ForeignKey('chapter.id', ondelete='CASCADE'), nullable=False)
     duration = db.Column(db.Integer, nullable=False)
-    pub_date = db.Column(db.Date, nullable=False)
-    questions = db.relationship('Question', backref='quiz')#Quiz.questions
-    scores = db.relationship('Scores', backref='quiz')#Quiz.scores
+    pub_date = db.Column(db.Date, nullable=False, default=lambda: datetime.now(UTC))
+    questions = db.relationship('Question', backref='quiz', cascade='all, delete-orphan')#Quiz.questions
+    scores = db.relationship('Scores', backref='quiz', cascade='all, delete-orphan')#Quiz.scores
     #lazy = True?
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
     q_statement = db.Column(db.String(256), nullable=False)
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='CASCADE'), nullable=False)
     opt1 = db.Column(db.String(32), nullable=False)
     opt2 = db.Column(db.String(32), nullable=False)
     opt3 = db.Column(db.String(32), nullable=False)
@@ -56,8 +56,8 @@ class Question(db.Model):
 
 class Scores(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete='CASCADE'), nullable=False)
     total_score = db.Column(db.Integer, nullable=False)
     datetime = db.Column(db.DateTime, nullable=False)
     #time_stamp = db.Column(db.DateTime(timezone=True), nullable=False, default=get_ist_time)

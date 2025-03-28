@@ -1,10 +1,10 @@
 from flask import render_template, url_for,redirect,flash,request,session
-from datetime import datetime,date
+from datetime import datetime,date, timezone, timedelta
 from app import app
 from models import db, User, Subject, Chapter, Quiz, Question, Scores
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import datetime, timezone, timedelta
+
 
 def get_ist_time():
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -654,6 +654,9 @@ def index():
 def view_chapter(subject_id, chapter_id):
     subject = Subject.query.get(subject_id)
     chapter = Chapter.query.get(chapter_id)
+    if not subject or not chapter:
+        flash("Invalid subject or chapter")
+        return redirect(url_for('index'))
     quizzes = chapter.quizzes
     return render_template('user_chapter.html', subject=subject, chapter=chapter, quizzes=quizzes)
 
@@ -669,10 +672,10 @@ def start_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
 
     # Check if the user has already attempted the quiz
-    existing_attempt = Scores.query.filter_by(user_id=user_id, quiz_id=quiz_id).first()
-    if existing_attempt:
-        flash("You have already attempted this quiz.", "warning")
-        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+    # existing_attempt = Scores.query.filter_by(user_id=user_id, quiz_id=quiz_id).first()
+    # if existing_attempt:
+    #     flash("You have already attempted this quiz.", "warning")
+    #     return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
 
     # Store quiz start time in session
     session[f'quiz_{quiz_id}_start_time'] = get_ist_time().isoformat()
@@ -710,10 +713,10 @@ def submit_quiz(quiz_id):
         return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
 
     # Check if the user already submitted
-    existing_attempt = Scores.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
-    if existing_attempt:
-        flash("You have already submitted this quiz.", "warning")
-        return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
+    # existing_attempt = Scores.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first()
+    # if existing_attempt:
+    #     flash("You have already submitted this quiz.", "warning")
+    #     return redirect(url_for('view_chapter', subject_id=quiz.chapter.sub_id, chapter_id=quiz.chap_id))
 
     user_answers = {}
     score = 0
@@ -747,6 +750,8 @@ def submit_quiz(quiz_id):
     )
 
 
+from sqlalchemy.orm import aliased
+
 @app.route('/quizzes', methods=['GET'])
 @auth_required
 def search_quizzes():
@@ -754,16 +759,20 @@ def search_quizzes():
     chapter_name = request.args.get('chapter_name', '').strip()
     quiz_name = request.args.get('quiz_name', '').strip()
 
+    # Alias to avoid ambiguous join
+    chap_alias = aliased(Chapter)
+
     # Start with all quizzes
-    query = Quiz.query
+    query = Quiz.query.join(Chapter).join(Subject)
 
     # Filter by subject name if provided
     if subject_name:
-        query = query.join(Chapter).join(Subject).filter(Subject.name.ilike(f"%{subject_name}%"))
+        query = query.filter(Subject.name.ilike(f"%{subject_name}%"))
 
     # Filter by chapter name if provided
     if chapter_name:
-        query = query.join(Chapter).filter(Chapter.name.ilike(f"%{chapter_name}%"))
+        query = query.join(chap_alias, Quiz.chap_id == chap_alias.id)\
+                     .filter(chap_alias.name.ilike(f"%{chapter_name}%"))
 
     # Filter by quiz name if provided
     if quiz_name:

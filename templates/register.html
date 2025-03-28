@@ -11,26 +11,30 @@
 </head>
 <body>
 
-    <div class="container mt-3">
+    <!-- Flash Messages -->
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
+            <div class="container-fluid">
                 {% for message in messages %}
+                {% if 'success' in message|lower %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% else %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                {% endif %}
                 {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
 
-    <!-- Navigation Bar (Fixed & No Hamburger Menu) -->
-    <nav class="navbar navbar-light bg-white shadow-sm border-bottom">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand brand-text" href="#">Quiz Master</a>
-            <a href="{{ url_for('login') }}" class="btn btn-outline-primary action-btn">Login</a>
-        </div>
-    </nav>
+
+    {% include 'navbar.html' with context %}
 
     <!-- Main Container -->
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
